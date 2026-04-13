@@ -20,6 +20,7 @@ local CONFIG = {
     WebhookUrl = "",
     AllowedUserIds = {
         5191232085,
+        9362153313,
     },
 }
 
