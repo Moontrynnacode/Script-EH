@@ -7,7 +7,7 @@ local LocalPlayer = Players.LocalPlayer
 local CONFIG = {
     GroundThreshold = 10,
     GroundResetThreshold = 8,
-    AirborneDuration = 3,
+    AirborneDuration = 5,
     AirborneDropGrace = 0.35,
     FastTurnThreshold = 220,
     FastTurnDuration = 0.3,
@@ -207,7 +207,7 @@ local function getGroundDistance(character, humanoid)
     end
 
     if not shortestDistance then
-        return CONFIG.RayLength, usingVehicle, trackedCFrame
+        return nil, usingVehicle, trackedCFrame
     end
 
     return shortestDistance, usingVehicle, trackedCFrame
@@ -360,7 +360,7 @@ Players.PlayerAdded:Connect(onPlayerAdded)
 Players.PlayerRemoving:Connect(onPlayerRemoving)
 
 if not isUserAllowed() then
-    warn("[Anticheat] Accès refusé pour l'utilisateur Roblox : " .. tostring(LocalPlayer and LocalPlayer.UserId or "inconnu"))
+    warn("[AltitudeMonitor] Accès refusé pour l'utilisateur Roblox : " .. tostring(LocalPlayer and LocalPlayer.UserId or "inconnu"))
     return
 end
 
