@@ -360,7 +360,7 @@ Players.PlayerAdded:Connect(onPlayerAdded)
 Players.PlayerRemoving:Connect(onPlayerRemoving)
 
 if not isUserAllowed() then
-    warn("[AltitudeMonitor] Accès refusé pour l'utilisateur Roblox : " .. tostring(LocalPlayer and LocalPlayer.UserId or "inconnu"))
+    warn("[Anticheat] Accès refusé pour l'utilisateur Roblox : " .. tostring(LocalPlayer and LocalPlayer.UserId or "inconnu"))
     return
 end
 
