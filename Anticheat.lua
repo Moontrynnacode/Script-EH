@@ -12,6 +12,8 @@ local CONFIG = {
     FastTurnThreshold = 220,
     FastTurnDuration = 0.3,
     RayLength = 2048,
+    MaxValidGroundDistance = 500,
+    PlayerCheckRadius = 10000,
     SampleInset = 0.8,
     DistanceSmoothingAlpha = 0.35,
     WindowName = "Anticheat",
@@ -119,6 +121,17 @@ local function clearAllStates()
     for player in pairs(playerStates) do
         resetState(player)
     end
+end
+
+local function clearStateData(state)
+    state.airborneSince = nil
+    state.fastTurnSince = nil
+    state.lastAboveAt = nil
+    state.lastTrackedCFrame = nil
+    state.lastTrackedSampleAt = nil
+    state.smoothedDistance = nil
+    state.fired = false
+    state.fastTurnFired = false
 end
 
 local function getCharacterParts(player)
@@ -229,27 +242,28 @@ local function processPlayer(player)
     local now = os.clock()
 
     if not character or not humanoid or not rootPart then
-        state.airborneSince = nil
-        state.fastTurnSince = nil
-        state.lastAboveAt = nil
-        state.lastTrackedCFrame = nil
-        state.lastTrackedSampleAt = nil
-        state.smoothedDistance = nil
-        state.fired = false
-        state.fastTurnFired = false
+        clearStateData(state)
         return
     end
 
+    if not humanoid.SeatPart then
+        clearStateData(state)
+        return
+    end
+
+    local localCharacter = LocalPlayer and LocalPlayer.Character
+    local localRootPart = localCharacter and localCharacter:FindFirstChild("HumanoidRootPart")
+    if localRootPart and player ~= LocalPlayer then
+        local distanceFromLocal = (rootPart.Position - localRootPart.Position).Magnitude
+        if distanceFromLocal > CONFIG.PlayerCheckRadius then
+            clearStateData(state)
+            return
+        end
+    end
+
     local groundDistance, usingVehicle, trackedCFrame = getGroundDistance(character, humanoid)
-    if not groundDistance or groundDistance <= 0 or groundDistance >= (CONFIG.RayLength - 5) then
-        state.airborneSince = nil
-        state.fastTurnSince = nil
-        state.lastAboveAt = nil
-        state.lastTrackedCFrame = nil
-        state.lastTrackedSampleAt = nil
-        state.smoothedDistance = nil
-        state.fired = false
-        state.fastTurnFired = false
+    if not groundDistance or groundDistance <= 0 or groundDistance > CONFIG.MaxValidGroundDistance then
+        clearStateData(state)
         return
     end
 
@@ -267,20 +281,12 @@ local function processPlayer(player)
     elseif belowResetThreshold then
         local shouldReset = (not state.lastAboveAt) or ((now - state.lastAboveAt) > CONFIG.AirborneDropGrace)
         if shouldReset then
-            state.airborneSince = nil
-            state.fastTurnSince = nil
-            state.lastAboveAt = nil
-            state.fired = false
-            state.fastTurnFired = false
+            clearStateData(state)
             return
         end
     else
         if state.airborneSince and state.lastAboveAt and (now - state.lastAboveAt) > CONFIG.AirborneDropGrace then
-            state.airborneSince = nil
-            state.fastTurnSince = nil
-            state.lastAboveAt = nil
-            state.fired = false
-            state.fastTurnFired = false
+            clearStateData(state)
             return
         end
     end
