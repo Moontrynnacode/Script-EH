@@ -241,7 +241,7 @@ local function processPlayer(player)
     end
 
     local groundDistance, usingVehicle, trackedCFrame = getGroundDistance(character, humanoid)
-    if not groundDistance then
+    if not groundDistance or groundDistance <= 0 or groundDistance >= (CONFIG.RayLength - 5) then
         state.airborneSince = nil
         state.fastTurnSince = nil
         state.lastAboveAt = nil
